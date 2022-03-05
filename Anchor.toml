@@ -1,11 +1,11 @@
 [programs.localnet]
-gappe = "Fg6PaFpoGXkYsidMpWTK6W2BeZ7FEfcYkg476zPFsLnS"
+gappe = "7spG7C84YJyTaxVvHLLtNbWF18SgACLyz5AdkBrwU1zY"
 
 [registry]
 url = "https://anchor.projectserum.com"
 
 [provider]
-cluster = "localnet"
+cluster = "devnet"
 wallet = "/Users/pepsighan/.config/solana/id.json"
 
 [scripts]

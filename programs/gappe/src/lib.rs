@@ -1,14 +1,53 @@
 use anchor_lang::prelude::*;
 
-declare_id!("Fg6PaFpoGXkYsidMpWTK6W2BeZ7FEfcYkg476zPFsLnS");
+declare_id!("7spG7C84YJyTaxVvHLLtNbWF18SgACLyz5AdkBrwU1zY");
 
 #[program]
 pub mod gappe {
     use super::*;
-    pub fn initialize(ctx: Context<Initialize>) -> ProgramResult {
+
+    /// Setup profile for an account.
+    pub fn setup_profile(ctx: Context<SetupProfile>, username: String, authority: Pubkey) -> ProgramResult {
+        ctx.accounts.profile.username = username;
+        ctx.accounts.profile.authority = authority;
+        Ok(())
+    }
+
+    /// Updates the username of an account.
+    pub fn update_username(ctx: Context<UpdateProfile>, username: String) -> ProgramResult {
+        ctx.accounts.profile.username = username;
         Ok(())
     }
 }
 
 #[derive(Accounts)]
-pub struct Initialize {}
+pub struct SetupProfile<'info> {
+    /// Limits the size of profile to 8000 bytes. Since `String` username is open-ended,
+    /// a size needs to be provided.
+    #[account(init, payer = user, space = 8000)]
+    pub profile: Account<'info, Profile>,
+    #[account(mut)]
+    pub user: Signer<'info>,
+    pub system_program: Program<'info, System>
+}
+
+#[derive(Accounts)]
+pub struct UpdateProfile<'info> {
+    /// Only allows the actual wallet of the profile to update profile.
+    /// Checks profile.authority matches signer's key.
+    #[account(mut, has_one = authority)]
+    pub profile: Account<'info, Profile>,
+    pub authority: Signer<'info>,
+}
+
+/// The profile of each account on Gappe. This is what is other users see before
+/// interacting with others.
+#[account]
+#[derive(Default)]
+pub struct Profile {
+    /// The wallet which owns this profile and can make changes to it.
+    pub authority: Pubkey,
+    /// The username of this profile.
+    pub username: String,
+}
+
