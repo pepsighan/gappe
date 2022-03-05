@@ -1,6 +1,7 @@
 import * as anchor from '@project-serum/anchor';
 import { Program } from '@project-serum/anchor';
 import { Gappe } from '../target/types/gappe';
+import { expect } from 'chai';
 
 describe('gappe', () => {
   // Configure the client to use the local cluster.
@@ -12,7 +13,7 @@ describe('gappe', () => {
   it('setup profile', async () => {
     const account = anchor.web3.Keypair.generate();
 
-    const tx = await program.rpc.setupProfile('username', {
+    await program.rpc.setupProfile('username', {
       accounts: {
         profile: account.publicKey,
         user: provider.wallet.publicKey,
@@ -21,6 +22,7 @@ describe('gappe', () => {
       signers: [account],
     });
 
-    // Check whether the username is set.
+    const profile = await program.account.profile.fetch(account.publicKey);
+    expect(profile.username).to.equal('username');
   });
 });
