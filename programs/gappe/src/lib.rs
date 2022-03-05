@@ -15,7 +15,9 @@ pub mod gappe {
 
 #[derive(Accounts)]
 pub struct SetupProfile<'info> {
-    #[account(init, payer = user)]
+    /// Limits the size of profile to 8000 bytes. Since `String` username is open-ended,
+    /// a size needs to be provided.
+    #[account(init, payer = user, space = 8000)]
     pub profile: Account<'info, Profile>,
     #[account(mut)]
     pub user: Signer<'info>,
