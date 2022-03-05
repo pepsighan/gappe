@@ -24,7 +24,7 @@ describe('gappe', () => {
     });
 
     const profile = await program.account.profile.fetch(account1.publicKey);
-    expect(profile.username).to.equal('username');
+    expect(profile.name).to.equal('username');
   });
 
   it('update profile', async () => {
@@ -38,7 +38,7 @@ describe('gappe', () => {
     });
 
     let profile = await program.account.profile.fetch(account2.publicKey);
-    expect(profile.username).to.equal('username');
+    expect(profile.name).to.equal('username');
 
     await program.rpc.updateUsername('username2', {
       accounts: {
@@ -49,15 +49,15 @@ describe('gappe', () => {
     });
 
     profile = await program.account.profile.fetch(account2.publicKey);
-    expect(profile.username).to.equal('username2');
+    expect(profile.name).to.equal('username2');
   });
 
   it('fetch two separate profile', async () => {
     const profile1 = await program.account.profile.fetch(account1.publicKey);
-    expect(profile1.username).to.equal('username');
+    expect(profile1.name).to.equal('username');
 
     const profile2 = await program.account.profile.fetch(account2.publicKey);
-    expect(profile2.username).to.equal('username2');
+    expect(profile2.name).to.equal('username2');
   });
 
   it('do not allow updating profile using wrong account', async () => {

@@ -7,22 +7,22 @@ pub mod gappe {
     use super::*;
 
     /// Setup profile for an account.
-    pub fn setup_profile(ctx: Context<SetupProfile>, username: String, authority: Pubkey) -> ProgramResult {
-        ctx.accounts.profile.username = username;
+    pub fn setup_profile(ctx: Context<SetupProfile>, name: String, authority: Pubkey) -> ProgramResult {
+        ctx.accounts.profile.name = name;
         ctx.accounts.profile.authority = authority;
         Ok(())
     }
 
-    /// Updates the username of an account.
-    pub fn update_username(ctx: Context<UpdateProfile>, username: String) -> ProgramResult {
-        ctx.accounts.profile.username = username;
+    /// Updates the name of a profile.
+    pub fn update_username(ctx: Context<UpdateProfile>, name: String) -> ProgramResult {
+        ctx.accounts.profile.name = name;
         Ok(())
     }
 }
 
 #[derive(Accounts)]
 pub struct SetupProfile<'info> {
-    /// Limits the size of profile to 8000 bytes. Since `String` username is open-ended,
+    /// Limits the size of profile to 8000 bytes. Since `String` name is open-ended,
     /// a size needs to be provided.
     #[account(init, payer = user, space = 8000)]
     pub profile: Account<'info, Profile>,
@@ -47,7 +47,7 @@ pub struct UpdateProfile<'info> {
 pub struct Profile {
     /// The wallet which owns this profile and can make changes to it.
     pub authority: Pubkey,
-    /// The username of this profile.
-    pub username: String,
+    /// The name of the user.
+    pub name: String,
 }
 
