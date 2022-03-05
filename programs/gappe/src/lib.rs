@@ -14,7 +14,7 @@ pub mod gappe {
     }
 
     /// Updates the name of a profile.
-    pub fn update_name(ctx: Context<UpdateProfile>, name: String) -> ProgramResult {
+    pub fn update_name(ctx: Context<UpdateName>, name: String) -> ProgramResult {
         ctx.accounts.profile.name = name;
         Ok(())
     }
@@ -28,11 +28,11 @@ pub struct SetupProfile<'info> {
     pub profile: Account<'info, Profile>,
     #[account(mut)]
     pub user: Signer<'info>,
-    pub system_program: Program<'info, System>
+    pub system_program: Program<'info, System>,
 }
 
 #[derive(Accounts)]
-pub struct UpdateProfile<'info> {
+pub struct UpdateName<'info> {
     /// Only allows the actual wallet of the profile to update profile.
     /// Checks profile.authority matches signer's key.
     #[account(mut, has_one = authority)]
@@ -49,5 +49,8 @@ pub struct Profile {
     pub authority: Pubkey,
     /// The name of the user.
     pub name: String,
+    /// All the friends of this profile.
+    pub friends: Vec<Pubkey>,
+    /// All the friend requests sent to this profile.
+    pub friend_requests: Vec<Pubkey>,
 }
-
