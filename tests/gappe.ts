@@ -40,7 +40,7 @@ describe('gappe', () => {
     let profile = await program.account.profile.fetch(account2.publicKey);
     expect(profile.name).to.equal('username');
 
-    await program.rpc.updateUsername('username2', {
+    await program.rpc.updateName('username2', {
       accounts: {
         profile: account2.publicKey,
         authority: account2.publicKey,
@@ -75,7 +75,7 @@ describe('gappe', () => {
 
     let err;
     try {
-      await program.rpc.updateUsername('username2', {
+      await program.rpc.updateName('username2', {
         accounts: {
           profile: user1.publicKey,
           authority: user1.publicKey,

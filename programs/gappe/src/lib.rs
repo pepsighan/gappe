@@ -14,7 +14,7 @@ pub mod gappe {
     }
 
     /// Updates the name of a profile.
-    pub fn update_username(ctx: Context<UpdateProfile>, name: String) -> ProgramResult {
+    pub fn update_name(ctx: Context<UpdateProfile>, name: String) -> ProgramResult {
         ctx.accounts.profile.name = name;
         Ok(())
     }
