@@ -11,6 +11,12 @@ pub mod gappe {
         ctx.accounts.profile.username = username;
         Ok(())
     }
+
+    /// Updates the username of an account.
+    pub fn update_username(ctx: Context<UpdateProfile>, username: String) -> ProgramResult {
+        ctx.accounts.profile.username = username;
+        Ok(())
+    }
 }
 
 #[derive(Accounts)]
@@ -22,6 +28,12 @@ pub struct SetupProfile<'info> {
     #[account(mut)]
     pub user: Signer<'info>,
     pub system_program: Program<'info, System>
+}
+
+#[derive(Accounts)]
+pub struct UpdateProfile<'info> {
+    #[account(mut)]
+    pub profile: Account<'info, Profile>,
 }
 
 /// The profile of each account on Gappe. This is what is other users see before
