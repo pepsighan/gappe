@@ -15,9 +15,11 @@ pub mod gappe {
 
 #[derive(Accounts)]
 pub struct SetupProfile<'info> {
-    /// `mut` is needed to save changes made to the profile.
-    #[account(mut)]
+    #[account(init, payer = user)]
     pub profile: Account<'info, Profile>,
+    #[account(mut)]
+    pub user: Signer<'info>,
+    pub system_program: Program<'info, System>
 }
 
 /// The profile of each account on Gappe. This is what is other users see before
