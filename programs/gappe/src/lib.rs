@@ -7,8 +7,9 @@ pub mod gappe {
     use super::*;
 
     /// Setup profile for an account.
-    pub fn setup_profile(ctx: Context<SetupProfile>, username: String) -> ProgramResult {
+    pub fn setup_profile(ctx: Context<SetupProfile>, username: String, authority: Pubkey) -> ProgramResult {
         ctx.accounts.profile.username = username;
+        ctx.accounts.profile.authority = authority;
         Ok(())
     }
 
@@ -32,8 +33,11 @@ pub struct SetupProfile<'info> {
 
 #[derive(Accounts)]
 pub struct UpdateProfile<'info> {
-    #[account(mut)]
+    /// Only allows the actual wallet of the profile to update profile.
+    /// Checks profile.authority matches signer's key.
+    #[account(mut, has_one = authority)]
     pub profile: Account<'info, Profile>,
+    pub authority: Signer<'info>,
 }
 
 /// The profile of each account on Gappe. This is what is other users see before
@@ -41,6 +45,9 @@ pub struct UpdateProfile<'info> {
 #[account]
 #[derive(Default)]
 pub struct Profile {
+    /// The wallet which owns this profile and can make changes to it.
+    pub authority: Pubkey,
+    /// The username of this profile.
     pub username: String,
 }
 

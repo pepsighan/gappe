@@ -14,7 +14,7 @@ describe('gappe', () => {
   const account2 = anchor.web3.Keypair.generate();
 
   it('setup profile', async () => {
-    await program.rpc.setupProfile('username', {
+    await program.rpc.setupProfile('username', account1.publicKey, {
       accounts: {
         profile: account1.publicKey,
         user: provider.wallet.publicKey,
@@ -28,7 +28,7 @@ describe('gappe', () => {
   });
 
   it('update profile', async () => {
-    await program.rpc.setupProfile('username', {
+    await program.rpc.setupProfile('username', account2.publicKey, {
       accounts: {
         profile: account2.publicKey,
         user: provider.wallet.publicKey,
@@ -43,7 +43,9 @@ describe('gappe', () => {
     await program.rpc.updateUsername('username2', {
       accounts: {
         profile: account2.publicKey,
+        authority: account2.publicKey,
       },
+      signers: [account2],
     });
 
     profile = await program.account.profile.fetch(account2.publicKey);
