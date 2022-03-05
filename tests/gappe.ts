@@ -59,4 +59,33 @@ describe('gappe', () => {
     const profile2 = await program.account.profile.fetch(account2.publicKey);
     expect(profile2.username).to.equal('username2');
   });
+
+  it('do not allow updating profile using wrong account', async () => {
+    const user1 = anchor.web3.Keypair.generate();
+    const user2 = anchor.web3.Keypair.generate();
+
+    await program.rpc.setupProfile('username', user1.publicKey, {
+      accounts: {
+        profile: user1.publicKey,
+        user: provider.wallet.publicKey,
+        systemProgram: anchor.web3.SystemProgram.programId,
+      },
+      signers: [user1],
+    });
+
+    let err;
+    try {
+      await program.rpc.updateUsername('username2', {
+        accounts: {
+          profile: user1.publicKey,
+          authority: user1.publicKey,
+        },
+        signers: [user2],
+      });
+    } catch (error) {
+      err = error;
+    }
+
+    expect(err).to.not.be.undefined;
+  });
 });
