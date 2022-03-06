@@ -42,6 +42,41 @@ pub mod gappe {
         ctx.accounts.profile_self.friends.push(friend_pubkey);
         Ok(())
     }
+
+    /// Decides what to do with a friend request.
+    pub fn decide_on_friend_request(ctx: Context<DecideFriendRequest>, accept: bool) -> Result<()> {
+        let friend_pubkey = ctx.accounts.profile_friend.authority;
+        let self_pubkey = ctx.accounts.profile_self.authority;
+
+        // Remove the pending request as it is going to be resolved now.
+        let request_index = ctx.accounts.profile_self
+            .friend_requests
+            .iter()
+            .position(|it| it == &friend_pubkey);
+        if request_index.is_none() {
+            return Err(error!(GappeError::InvalidFriendRequest));
+        }
+        ctx.accounts.profile_self.friend_requests.remove(request_index.unwrap());
+
+        if accept {
+            // Add the request to the friends list.
+            ctx.accounts.profile_self.friends.push(friend_pubkey);
+            Ok(())
+        } else {
+            // Remove it from the other guy's friends list since it pre-emptively added it on
+            // request.
+            let friend_index = ctx.accounts.profile_friend
+                .friends
+                .iter()
+                .position(|it| it == &self_pubkey);
+            if friend_index.is_none() {
+                return Err(error!(GappeError::InvalidFriendRequest));
+            }
+
+            ctx.accounts.profile_friend.friends.remove(friend_index.unwrap());
+            Ok(())
+        }
+    }
 }
 
 #[derive(Accounts)]
@@ -73,7 +108,19 @@ pub struct SendFriendRequest<'info> {
     #[account(mut)]
     pub profile_self: Account<'info, Profile>,
     /// The one who is sending the request.
-    pub requester: Signer<'info>
+    pub requester: Signer<'info>,
+}
+
+#[derive(Accounts)]
+pub struct DecideFriendRequest<'info> {
+    /// The profile of a potential friend.
+    #[account(mut)]
+    pub profile_friend: Account<'info, Profile>,
+    /// The profile of oneself.
+    #[account(mut)]
+    pub profile_self: Account<'info, Profile>,
+    /// The one who is sending the request.
+    pub requester: Signer<'info>,
 }
 
 /// The profile of each account on Gappe. This is what is other users see before
@@ -91,9 +138,10 @@ pub struct Profile {
     pub friend_requests: Vec<Pubkey>,
 }
 
-
 #[error_code]
 pub enum GappeError {
     #[msg("Already a friend")]
     AlreadyFriend,
+    #[msg("Invalid friend request")]
+    InvalidFriendRequest,
 }
