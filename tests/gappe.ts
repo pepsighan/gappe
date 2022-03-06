@@ -88,4 +88,144 @@ describe('gappe', () => {
 
     expect(err).to.not.be.undefined;
   });
+
+  it('send friend request', async () => {
+    const person1 = anchor.web3.Keypair.generate();
+    const person2 = anchor.web3.Keypair.generate();
+
+    await program.rpc.setupProfile('person1', person1.publicKey, {
+      accounts: {
+        profile: person1.publicKey,
+        user: provider.wallet.publicKey,
+        systemProgram: anchor.web3.SystemProgram.programId,
+      },
+      signers: [person1],
+    });
+    await program.rpc.setupProfile('person2', person2.publicKey, {
+      accounts: {
+        profile: person2.publicKey,
+        user: provider.wallet.publicKey,
+        systemProgram: anchor.web3.SystemProgram.programId,
+      },
+      signers: [person2],
+    });
+
+    await program.rpc.sendFriendRequest({
+      accounts: {
+        profileFriend: person2.publicKey,
+        profileSelf: person1.publicKey,
+        requester: person1.publicKey,
+      },
+      signers: [person1],
+    });
+
+    const profile1 = await program.account.profile.fetch(person1.publicKey);
+    const profile2 = await program.account.profile.fetch(person2.publicKey);
+    expect(profile1.friends.length).to.be.equal(1);
+    expect(profile2.friendRequests.length).to.be.equal(1);
+    expect(profile1.friends[0].toBase58()).to.be.equal(
+      person2.publicKey.toBase58()
+    );
+    expect(profile2.friendRequests[0].toBase58()).to.be.equal(
+      person1.publicKey.toBase58()
+    );
+  });
+
+  it('accept friend request', async () => {
+    const person1 = anchor.web3.Keypair.generate();
+    const person2 = anchor.web3.Keypair.generate();
+
+    await program.rpc.setupProfile('person1', person1.publicKey, {
+      accounts: {
+        profile: person1.publicKey,
+        user: provider.wallet.publicKey,
+        systemProgram: anchor.web3.SystemProgram.programId,
+      },
+      signers: [person1],
+    });
+    await program.rpc.setupProfile('person2', person2.publicKey, {
+      accounts: {
+        profile: person2.publicKey,
+        user: provider.wallet.publicKey,
+        systemProgram: anchor.web3.SystemProgram.programId,
+      },
+      signers: [person2],
+    });
+
+    await program.rpc.sendFriendRequest({
+      accounts: {
+        profileFriend: person2.publicKey,
+        profileSelf: person1.publicKey,
+        requester: person1.publicKey,
+      },
+      signers: [person1],
+    });
+
+    await program.rpc.decideOnFriendRequest(true, {
+      accounts: {
+        profileSelf: person2.publicKey,
+        profileFriend: person1.publicKey,
+        requester: person2.publicKey,
+      },
+      signers: [person2],
+    });
+
+    const profile1 = await program.account.profile.fetch(person1.publicKey);
+    const profile2 = await program.account.profile.fetch(person2.publicKey);
+    expect(profile1.friends.length).to.be.equal(1);
+    expect(profile1.friendRequests.length).to.be.equal(0);
+    expect(profile2.friends.length).to.be.equal(1);
+    expect(profile1.friends[0].toBase58()).to.be.equal(
+      person2.publicKey.toBase58()
+    );
+    expect(profile2.friends[0].toBase58()).to.be.equal(
+      person1.publicKey.toBase58()
+    );
+  });
+
+  it('reject friend request', async () => {
+    const person1 = anchor.web3.Keypair.generate();
+    const person2 = anchor.web3.Keypair.generate();
+
+    await program.rpc.setupProfile('person1', person1.publicKey, {
+      accounts: {
+        profile: person1.publicKey,
+        user: provider.wallet.publicKey,
+        systemProgram: anchor.web3.SystemProgram.programId,
+      },
+      signers: [person1],
+    });
+    await program.rpc.setupProfile('person2', person2.publicKey, {
+      accounts: {
+        profile: person2.publicKey,
+        user: provider.wallet.publicKey,
+        systemProgram: anchor.web3.SystemProgram.programId,
+      },
+      signers: [person2],
+    });
+
+    await program.rpc.sendFriendRequest({
+      accounts: {
+        profileFriend: person2.publicKey,
+        profileSelf: person1.publicKey,
+        requester: person1.publicKey,
+      },
+      signers: [person1],
+    });
+
+    await program.rpc.decideOnFriendRequest(false, {
+      accounts: {
+        profileSelf: person2.publicKey,
+        profileFriend: person1.publicKey,
+        requester: person2.publicKey,
+      },
+      signers: [person2],
+    });
+
+    const profile1 = await program.account.profile.fetch(person1.publicKey);
+    const profile2 = await program.account.profile.fetch(person2.publicKey);
+    expect(profile1.friends.length).to.be.equal(0);
+    expect(profile1.friendRequests.length).to.be.equal(0);
+    expect(profile2.friends.length).to.be.equal(0);
+  });
 });
