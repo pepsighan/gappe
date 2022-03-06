@@ -1,6 +1,5 @@
 extern crate core;
 
-use core::num::flt2dec::Sign;
 use anchor_lang::prelude::*;
 
 declare_id!("7spG7C84YJyTaxVvHLLtNbWF18SgACLyz5AdkBrwU1zY");
@@ -10,20 +9,20 @@ pub mod gappe {
     use super::*;
 
     /// Setup profile for an account.
-    pub fn setup_profile(ctx: Context<SetupProfile>, name: String, authority: Pubkey) -> ProgramResult {
+    pub fn setup_profile(ctx: Context<SetupProfile>, name: String, authority: Pubkey) -> Result<()> {
         ctx.accounts.profile.name = name;
         ctx.accounts.profile.authority = authority;
         Ok(())
     }
 
     /// Updates the name of a profile.
-    pub fn update_name(ctx: Context<UpdateName>, name: String) -> ProgramResult {
+    pub fn update_name(ctx: Context<UpdateName>, name: String) -> Result<()> {
         ctx.accounts.profile.name = name;
         Ok(())
     }
 
     /// Sends friend request.
-    pub fn send_friend_request(ctx: Context<SendFriendRequest>) -> ProgramResult {
+    pub fn send_friend_request(ctx: Context<SendFriendRequest>) -> Result<()> {
         let self_pubkey = ctx.accounts.requester.key();
         let friend_pubkey = ctx.accounts.profile_friend.authority;
 
