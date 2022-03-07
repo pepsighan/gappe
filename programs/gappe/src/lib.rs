@@ -21,13 +21,6 @@ pub mod gappe {
         Ok(())
     }
 
-    /// Adds a contact.
-    pub fn add_contact(ctx: Context<AddContact>, contact: Pubkey) -> Result<()> {
-        ctx.accounts.contact.owner = ctx.accounts.owner.key();
-        ctx.accounts.contact.address = contact;
-        Ok(())
-    }
-
     /// Sends a message.
     pub fn send_message(ctx: Context<SendMessage>, message: String, sent_to: Pubkey) -> Result<()> {
         ctx.accounts.message.text = message;
@@ -68,25 +61,6 @@ pub struct Profile {
     pub authority: Pubkey,
     /// The name of the user.
     pub name: String,
-}
-
-#[derive(Accounts)]
-pub struct AddContact<'info> {
-    #[account(init, payer = owner)]
-    pub contact: Account<'info, Contact>,
-    #[account(mut)]
-    pub owner: Signer<'info>,
-    pub system_program: Program<'info, System>,
-}
-
-/// A contact of a user.
-#[account]
-#[derive(Default)]
-pub struct Contact {
-    /// The owner of the contact.
-    pub owner: Pubkey,
-    /// The contact's public key.
-    pub address: Pubkey,
 }
 
 #[derive(Accounts)]
