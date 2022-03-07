@@ -21,61 +21,11 @@ pub mod gappe {
         Ok(())
     }
 
-    /// Sends friend request.
-    pub fn send_friend_request(ctx: Context<SendFriendRequest>) -> Result<()> {
-        let self_pubkey = ctx.accounts.requester.key();
-        let friend_pubkey = ctx.accounts.profile_friend.authority;
-
-        // If already a friend, error out.
-        if ctx.accounts.profile_friend.friends.contains(&self_pubkey) {
-            return Err(error!(GappeError::AlreadyFriend));
-        }
-
-        // If already requested, ignore this one.
-        if ctx.accounts.profile_friend.friend_requests.contains(&self_pubkey) {
-            return Ok(());
-        }
-
-        // Send the request to a potential friend.
-        ctx.accounts.profile_friend.friend_requests.push(self_pubkey);
-        // Register the other user as one's friend.
-        ctx.accounts.profile_self.friends.push(friend_pubkey);
+    /// Adds a contact.
+    pub fn add_contact(ctx: Context<AddContact>, contact: Pubkey) -> Result<()> {
+        ctx.accounts.contact.owner = ctx.accounts.owner.key();
+        ctx.accounts.contact.address = contact;
         Ok(())
-    }
-
-    /// Decides what to do with a friend request.
-    pub fn decide_on_friend_request(ctx: Context<DecideFriendRequest>, accept: bool) -> Result<()> {
-        let friend_pubkey = ctx.accounts.profile_friend.authority;
-        let self_pubkey = ctx.accounts.profile_self.authority;
-
-        // Remove the pending request as it is going to be resolved now.
-        let request_index = ctx.accounts.profile_self
-            .friend_requests
-            .iter()
-            .position(|it| it == &friend_pubkey);
-        if request_index.is_none() {
-            return Err(error!(GappeError::InvalidFriendRequest));
-        }
-        ctx.accounts.profile_self.friend_requests.remove(request_index.unwrap());
-
-        if accept {
-            // Add the request to the friends list.
-            ctx.accounts.profile_self.friends.push(friend_pubkey);
-            Ok(())
-        } else {
-            // Remove it from the other guy's friends list since it pre-emptively added it on
-            // request.
-            let friend_index = ctx.accounts.profile_friend
-                .friends
-                .iter()
-                .position(|it| it == &self_pubkey);
-            if friend_index.is_none() {
-                return Err(error!(GappeError::InvalidFriendRequest));
-            }
-
-            ctx.accounts.profile_friend.friends.remove(friend_index.unwrap());
-            Ok(())
-        }
     }
 }
 
@@ -99,29 +49,6 @@ pub struct UpdateName<'info> {
     pub authority: Signer<'info>,
 }
 
-#[derive(Accounts)]
-pub struct SendFriendRequest<'info> {
-    /// The profile of a potential friend.
-    #[account(mut)]
-    pub profile_friend: Account<'info, Profile>,
-    /// The profile of oneself.
-    #[account(mut)]
-    pub profile_self: Account<'info, Profile>,
-    /// The one who is sending the request.
-    pub requester: Signer<'info>,
-}
-
-#[derive(Accounts)]
-pub struct DecideFriendRequest<'info> {
-    /// The profile of a potential friend.
-    #[account(mut)]
-    pub profile_friend: Account<'info, Profile>,
-    /// The profile of oneself.
-    #[account(mut)]
-    pub profile_self: Account<'info, Profile>,
-    /// The one who is sending the request.
-    pub requester: Signer<'info>,
-}
 
 /// The profile of each account on Gappe. This is what is other users see before
 /// interacting with others.
@@ -132,16 +59,22 @@ pub struct Profile {
     pub authority: Pubkey,
     /// The name of the user.
     pub name: String,
-    /// All the friends of this profile.
-    pub friends: Vec<Pubkey>,
-    /// All the friend requests sent to this profile.
-    pub friend_requests: Vec<Pubkey>,
 }
 
-#[error_code]
-pub enum GappeError {
-    #[msg("Already a friend")]
-    AlreadyFriend,
-    #[msg("Invalid friend request")]
-    InvalidFriendRequest,
+#[derive(Accounts)]
+pub struct AddContact<'info> {
+    #[account(init, payer = owner)]
+    pub contact: Account<'info, Contact>,
+    #[account(mut)]
+    pub owner: Signer<'info>,
+    pub system_program: Program<'info, System>,
+}
+
+#[account]
+#[derive(Default)]
+pub struct Contact {
+    /// The owner of the contact.
+    pub owner: Pubkey,
+    /// The contact's public key.
+    pub address: Pubkey,
 }
