@@ -88,4 +88,30 @@ describe('gappe', () => {
 
     expect(err).to.not.be.undefined;
   });
+
+  it('add a contact', async () => {
+    const user = anchor.web3.Keypair.generate();
+    const other = anchor.web3.Keypair.generate();
+    const contact = anchor.web3.Keypair.generate();
+
+    const signature = await program.provider.connection.requestAirdrop(
+      user.publicKey,
+      100000000
+    );
+    await program.provider.connection.confirmTransaction(signature);
+
+    await program.rpc.addContact(other.publicKey, {
+      accounts: {
+        contact: contact.publicKey,
+        owner: user.publicKey,
+        systemProgram: anchor.web3.SystemProgram.programId,
+      },
+      signers: [user, contact],
+    });
+
+    const savedContact = await program.account.contact.fetch(contact.publicKey);
+    expect(savedContact.address.toBase58()).to.be.equal(
+      other.publicKey.toBase58()
+    );
+  });
 });

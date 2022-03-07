@@ -20,6 +20,13 @@ pub mod gappe {
         ctx.accounts.profile.name = name;
         Ok(())
     }
+
+    /// Adds a contact.
+    pub fn add_contact(ctx: Context<AddContact>, contact: Pubkey) -> Result<()> {
+        ctx.accounts.contact.owner = ctx.accounts.owner.key();
+        ctx.accounts.contact.address = contact;
+        Ok(())
+    }
 }
 
 #[derive(Accounts)]
@@ -52,4 +59,22 @@ pub struct Profile {
     pub authority: Pubkey,
     /// The name of the user.
     pub name: String,
+}
+
+#[derive(Accounts)]
+pub struct AddContact<'info> {
+    #[account(init, payer = owner)]
+    pub contact: Account<'info, Contact>,
+    #[account(mut)]
+    pub owner: Signer<'info>,
+    pub system_program: Program<'info, System>,
+}
+
+#[account]
+#[derive(Default)]
+pub struct Contact {
+    /// The owner of the contact.
+    pub owner: Pubkey,
+    /// The contact's public key.
+    pub address: Pubkey,
 }
