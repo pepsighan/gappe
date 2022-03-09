@@ -31,7 +31,7 @@ describe('gappe', () => {
     });
 
     const savedMessage = await program.account.message.fetch(message.publicKey);
-    expect(savedMessage.text).to.be.equal('Hello there!');
+    expect(savedMessage.payload).to.be.equal('Hello there!');
     expect(savedMessage.sentTo.toBase58()).to.be.equal(
       other.publicKey.toBase58()
     );

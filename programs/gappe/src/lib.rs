@@ -9,8 +9,8 @@ pub mod gappe {
     use super::*;
 
     /// Sends a message.
-    pub fn send_message(ctx: Context<SendMessage>, message: String, sent_to: Pubkey) -> Result<()> {
-        ctx.accounts.message.text = message;
+    pub fn send_message(ctx: Context<SendMessage>, payload: String, sent_to: Pubkey) -> Result<()> {
+        ctx.accounts.message.payload = payload;
         ctx.accounts.message.sent_by = ctx.accounts.owner.key();
         ctx.accounts.message.sent_to = sent_to;
         ctx.accounts.message.timestamp = Clock::get().unwrap().unix_timestamp;
@@ -20,7 +20,7 @@ pub mod gappe {
 
 #[derive(Accounts)]
 pub struct SendMessage<'info> {
-    /// Need to specify the space because `text: String` is unbounded.
+    /// Need to specify the space because `payload: String` is unbounded.
     #[account(init, payer = owner, space = 900)]
     pub message: Account<'info, Message>,
     #[account(mut)]
@@ -33,6 +33,6 @@ pub struct SendMessage<'info> {
 pub struct Message {
     pub sent_by: Pubkey,
     pub sent_to: Pubkey,
-    pub text: String,
+    pub payload: String,
     pub timestamp: i64,
 }
