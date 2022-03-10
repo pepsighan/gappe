@@ -10,7 +10,7 @@ pub mod gappe {
     use super::*;
 
     /// Sends a message.
-    pub fn send_message(ctx: Context<SendMessage>, payload: String, sent_to: Pubkey, uuid: String) -> Result<()> {
+    pub fn send_message(ctx: Context<SendMessage>, payload: String, sent_to: Pubkey, uuid: u128) -> Result<()> {
         ctx.accounts.message.payload = payload;
         ctx.accounts.message.sent_by = ctx.accounts.owner.key();
         ctx.accounts.message.sent_to = sent_to;
@@ -22,14 +22,14 @@ pub mod gappe {
 }
 
 #[derive(Accounts)]
-#[instruction(payload: String, sent_to: Pubkey, uuid: String)]
+#[instruction(payload: String, sent_to: Pubkey, uuid: u128)]
 pub struct SendMessage<'info> {
     /// Need to specify the space because `payload: String` is unbounded.
     #[account(
     init,
     payer = owner,
     space = 900,
-    seeds = ["message".as_ref(), uuid.as_ref(), owner.key().as_ref(), sent_to.as_ref()],
+    seeds = ["message".as_ref(), uuid.to_be_bytes().as_ref(), owner.key().as_ref(), sent_to.as_ref()],
     bump
     )]
     pub message: Account<'info, Message>,
@@ -45,7 +45,7 @@ pub struct Message {
     pub sent_to: Pubkey,
     pub payload: String,
     // TODO: Use i8 array instead of String.
-    pub uuid: String,
+    pub uuid: u128,
     pub timestamp: i64,
     pub bump: u8,
 }

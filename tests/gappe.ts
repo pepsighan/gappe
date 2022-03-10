@@ -16,12 +16,12 @@ describe('gappe', () => {
     const other = anchor.web3.Keypair.generate();
 
     const id = uuidv4(null, []);
-    const uuid = String.fromCharCode(...id);
+    const uuid = new anchor.BN(id);
 
     const [message] = await anchor.web3.PublicKey.findProgramAddress(
       [
         anchor.utils.bytes.utf8.encode('message'),
-        anchor.utils.bytes.utf8.encode(uuid),
+        uuid.toBuffer('be'),
         user.publicKey.toBuffer(),
         other.publicKey.toBuffer(),
       ],
