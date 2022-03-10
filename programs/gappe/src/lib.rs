@@ -29,7 +29,7 @@ pub struct SendMessage<'info> {
     init,
     payer = owner,
     space = 900,
-    seeds = ["message".as_ref(), uuid.to_be_bytes().as_ref(), owner.key().as_ref(), sent_to.as_ref()],
+    seeds = ["message".as_ref(), uuid.to_le_bytes().as_ref(), owner.key().as_ref(), sent_to.as_ref()],
     bump
     )]
     pub message: Account<'info, Message>,
@@ -44,7 +44,6 @@ pub struct Message {
     pub sent_by: Pubkey,
     pub sent_to: Pubkey,
     pub payload: String,
-    // TODO: Use i8 array instead of String.
     pub uuid: u128,
     pub timestamp: i64,
     pub bump: u8,

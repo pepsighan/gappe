@@ -21,7 +21,7 @@ describe('gappe', () => {
     const [message] = await anchor.web3.PublicKey.findProgramAddress(
       [
         anchor.utils.bytes.utf8.encode('message'),
-        uuid.toBuffer('be'),
+        uuid.toBuffer('le'),
         user.publicKey.toBuffer(),
         other.publicKey.toBuffer(),
       ],
