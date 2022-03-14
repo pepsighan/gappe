@@ -15,23 +15,17 @@ describe('gappe', () => {
     const user = anchor.web3.Keypair.generate();
     const other = anchor.web3.Keypair.generate();
 
-    const id = Buffer.from([
-      211, 148, 232, 174, 169, 145, 71, 153, 145, 235, 157, 10, 170, 117, 86,
-      197,
-    ]); // Buffer.from(uuidv4(null, []));
+    const id = Buffer.from(uuidv4(null, []));
 
-    const receiver = 'FgeKvTXMumnr6UGaCwyh2NZAdWjeYeBqJP9HppyQnDxK';
-    const sender = 'GchkX531gRuNcpVq81sv2y29SuSZg1GwExa3fsko7or5';
     const [message] = await anchor.web3.PublicKey.findProgramAddress(
       [
         anchor.utils.bytes.utf8.encode('message'),
-        anchor.utils.bytes.bs58.decode(sender),
-        anchor.utils.bytes.bs58.decode(receiver),
+        user.publicKey.toBuffer(),
+        other.publicKey.toBuffer(),
         id,
       ],
       program.programId
     );
-    console.log(message.toBase58());
 
     const signature = await program.provider.connection.requestAirdrop(
       user.publicKey,
