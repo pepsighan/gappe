@@ -1,6 +1,7 @@
 import * as anchor from '@project-serum/anchor';
 import { Program } from '@project-serum/anchor';
 import { expect } from 'chai';
+import { v4 as uuidv4 } from 'uuid';
 import { Gappe } from '../target/types/gappe';
 
 describe('gappe', () => {
@@ -13,7 +14,18 @@ describe('gappe', () => {
   it('send a message', async () => {
     const user = anchor.web3.Keypair.generate();
     const other = anchor.web3.Keypair.generate();
-    const message = anchor.web3.Keypair.generate();
+
+    const id = Buffer.from(uuidv4(null, []));
+
+    const [message] = await anchor.web3.PublicKey.findProgramAddress(
+      [
+        anchor.utils.bytes.utf8.encode('message'),
+        user.publicKey.toBuffer(),
+        other.publicKey.toBuffer(),
+        id,
+      ],
+      program.programId
+    );
 
     const signature = await program.provider.connection.requestAirdrop(
       user.publicKey,
@@ -21,16 +33,16 @@ describe('gappe', () => {
     );
     await program.provider.connection.confirmTransaction(signature);
 
-    await program.rpc.sendMessage('Hello there!', other.publicKey, {
+    await program.rpc.sendMessage('Hello there!', other.publicKey, id, {
       accounts: {
-        message: message.publicKey,
+        message,
         owner: user.publicKey,
         systemProgram: anchor.web3.SystemProgram.programId,
       },
-      signers: [user, message],
+      signers: [user],
     });
 
-    const savedMessage = await program.account.message.fetch(message.publicKey);
+    const savedMessage = await program.account.message.fetch(message);
     expect(savedMessage.payload).to.be.equal('Hello there!');
     expect(savedMessage.sentTo.toBase58()).to.be.equal(
       other.publicKey.toBase58()
